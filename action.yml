@@ -1,0 +1,10 @@
+name: Setup CI Runner
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Printing
+      shell: bash
+      run: echo "test echo ---- ${{ github.run_id }}"

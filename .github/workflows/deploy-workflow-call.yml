@@ -1,0 +1,31 @@
+on:
+  workflow_call:
+    inputs:
+      test:
+        type: string
+        required: true
+
+jobs:
+  test:
+    name: ${{ inputs.test }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: First
+        run: echo ${{ inputs.test }}
+      - name: Second
+        run: echo ${{ github.run_id }}
+      - name: Third
+        uses: kilianbraquin/test-github-actions-reusable@main
+
+  test-bis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: First
+        run: echo ${{ inputs.test }}
+
+  test-tres:
+    needs: test-bis
+    runs-on: ubuntu-latest
+    steps:
+      - name: First
+        run: echo ${{ inputs.test }}

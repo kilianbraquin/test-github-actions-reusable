@@ -20,48 +20,20 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Lint --- ${{ env.BRANCH_NAME }}'
+
   test:
-    name: "Name Attempt"
+    name: "Test"
     runs-on: ubuntu-latest
     steps:
-      - name: First
-        run: echo ${{ inputs.test }}
-      - name: Second
-        run: echo ${{ github.run_id }}
-      - name: Third
-        uses: kilianbraquin/test-github-actions-reusable@main
+      - run: echo 'Test'
 
-  test-bis:
+  types:
+    name: "Types"
     runs-on: ubuntu-latest
     steps:
-      - name: First
-        run: echo ${{ inputs.test }}
-
-  test-tres:
-    needs: test-bis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: First
-        run: echo ${{ inputs.test }}
-      - name: Send a success notification to the user
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload-file-path: ${{ inputs.SUCCESS_PAYLOAD_FILE_PATH }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-          RUN_ID: ${{ github.run_id }}
-          CHANNEL_ID: ${{ inputs.CHANNEL_ID }}
-          APP_URL: ${{ inputs.APP_URL }}
-      - name: Send an error notification to the user
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload-file-path: ${{ inputs.ERROR_PAYLOAD_FILE_PATH }}
-        env:
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-          RUN_ID: ${{ github.run_id }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          CHANNEL_ID: ${{ inputs.CHANNEL_ID }}
-          JOB_IDENTIFIER: 'build'
+      - run: echo 'Types'

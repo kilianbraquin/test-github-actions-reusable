@@ -1,17 +1,5 @@
 on:
   workflow_call:
-    inputs:
-      CHANNEL_ID:
-        type: string
-        required: true
-      SUCCESS_PAYLOAD_FILE_PATH:
-        type: string
-        default: './slack/slack-deploy-default-payload.json'
-      ERROR_PAYLOAD_FILE_PATH:
-        type: string
-        default: './slack/slack-error-payload.json'
-      APP_URL:
-        type: string
     secrets:
       SLACK_WEBHOOK_URL:
         required: true

@@ -1,13 +1,27 @@
 on:
   workflow_call:
     inputs:
-      test:
+      CHANNEL_ID:
         type: string
         required: true
+      SUCCESS_PAYLOAD_FILE_PATH:
+        type: string
+        default: './slack/slack-deploy-default-payload.json'
+      ERROR_PAYLOAD_FILE_PATH:
+        type: string
+        default: './slack/slack-error-payload.json'
+      APP_URL:
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   test:
-    name: ${{ inputs.test }}
+    name: "Name Attempt"
     runs-on: ubuntu-latest
     steps:
       - name: First
@@ -27,5 +41,27 @@ jobs:
     needs: test-bis
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: First
         run: echo ${{ inputs.test }}
+      - name: Send a success notification to the user
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload-file-path: ${{ inputs.SUCCESS_PAYLOAD_FILE_PATH }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          RUN_ID: ${{ github.run_id }}
+          CHANNEL_ID: ${{ inputs.CHANNEL_ID }}
+          APP_URL: ${{ inputs.APP_URL }}
+      - name: Send an error notification to the user
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload-file-path: ${{ inputs.ERROR_PAYLOAD_FILE_PATH }}
+        env:
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          RUN_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          CHANNEL_ID: ${{ inputs.CHANNEL_ID }}
+          JOB_IDENTIFIER: 'build'

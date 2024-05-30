@@ -57,7 +57,6 @@ jobs:
     steps:
       - run: echo 'Types'
       - run: sleep 10s
-      - run: exit 1
       - id: set-status
         run: echo "CHECKS_FAILURE=true" >> "$GITHUB_ENV"
 

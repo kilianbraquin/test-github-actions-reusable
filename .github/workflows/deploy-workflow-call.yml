@@ -62,6 +62,7 @@ jobs:
     steps:
       - run: echo 'Types'
       - run: sleep 10s
+      - run: exit 1
       - id: set-status
         run: echo "approved=true" >> "$GITHUB_OUTPUT"
 

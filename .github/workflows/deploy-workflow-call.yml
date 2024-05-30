@@ -2,6 +2,7 @@ on: workflow_call
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  CHECKS_FAILURE: 'false'
 
 jobs:
   init:
@@ -31,40 +32,34 @@ jobs:
     continue-on-error: true
     name: "Lint"
     runs-on: ubuntu-latest
-    outputs:
-      approved: ${{ steps.set-status.outputs.approved }}
     steps:
       - run: echo 'Lint --- ${{ env.BRANCH_NAME }}'
       - run: sleep 5s
       - id: set-status
-        run: echo "approved=true" >> "$GITHUB_OUTPUT"
+        run: echo "CHECKS_FAILURE=true" >> "$GITHUB_ENV"
 
   test:
     needs: init
     continue-on-error: true
     name: "Test"
     runs-on: ubuntu-latest
-    outputs:
-      approved: ${{ steps.set-status.outputs.approved }}
     steps:
       - run: echo 'Test'
       - run: sleep 15s
       - id: set-status
-        run: echo "approved=true" >> "$GITHUB_OUTPUT"
+        run: echo "CHECKS_FAILURE=true" >> "$GITHUB_ENV"
 
   types:
     needs: init
     continue-on-error: true
     name: "Types"
     runs-on: ubuntu-latest
-    outputs:
-      approved: ${{ steps.set-status.outputs.approved }}
     steps:
       - run: echo 'Types'
       - run: sleep 10s
       - run: exit 1
       - id: set-status
-        run: echo "approved=true" >> "$GITHUB_OUTPUT"
+        run: echo "CHECKS_FAILURE=true" >> "$GITHUB_ENV"
 
   end:
     needs: [lint, test, types]
@@ -73,21 +68,17 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const jobStatus = [
-              '${{needs.lint.outputs.approved}}',
-              '${{needs.test.outputs.approved}}',
-              '${{needs.types.outputs.approved}}'
-            ];
-            
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: context.sha,
               context: 'reusable-checks',
-              state: jobStatus.every(status => status === 'true') ? 'success' : 'failure',
+              state: ${{ env.CHECKS_FAILURE }} === 'false' ? 'success' : 'failure',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               description: 'Reusable Workflow',
               headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
               }
             });
+      - if: ${{ env.CHECKS_FAILURE != 'false' }}
+        run: exit 1

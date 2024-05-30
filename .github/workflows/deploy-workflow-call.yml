@@ -1,27 +1,71 @@
-on:
-  workflow_call:
-    secrets:
-      SLACK_WEBHOOK_URL:
-        required: true
+on: workflow_call
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        id: init-checks
+        with:
+          result-encoding: string
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              context: 'reusable-checks',
+              state: 'pending',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              description: 'Reusable Workflow',
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            });
+  
+
   lint:
+    needs: init
     name: "Lint"
     runs-on: ubuntu-latest
     steps:
       - run: echo 'Lint --- ${{ env.BRANCH_NAME }}'
+      - run: sleep 5s
 
   test:
+    needs: init
     name: "Test"
     runs-on: ubuntu-latest
     steps:
       - run: echo 'Test'
+      - run: sleep 15s
 
   types:
+    needs: init
     name: "Types"
     runs-on: ubuntu-latest
     steps:
       - run: echo 'Types'
+      - run: sleep 10s
+
+  end:
+    needs: [lint, test, types]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              context: 'reusable-checks',
+              state: 'success',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              description: 'Reusable Workflow',
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            });

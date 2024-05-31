@@ -54,12 +54,14 @@ jobs:
     needs: [ lint, test, types ]
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    env:
-      CHECKS_STATUS: ${{ !(contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped') || contains(needs.*.result, 'cancelled')) && 'success' || 'failure' }}
     steps:
       - uses: actions/github-script@v7
+        id: set-final-commit-status
         with:
+          result-encoding: string
           script: |
+            const hasFailed = ${{ contains(needs.*.result, 'failure') }} || ${{ contains(needs.*.result, 'skipped') }} || ${{ contains(needs.*.result, 'cancelled') }};
+            const state = hasFailed ? 'success' : 'failure';
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -72,5 +74,6 @@ jobs:
                 'X-GitHub-Api-Version': '2022-11-28'
               }
             });
-      - if: ${{ env.CHECKS_STATUS != 'success' }}
+            return state;
+      - if: ${{ steps.set-final-commit-status.outputs.result != 'success' }}
         run: exit 1

@@ -49,19 +49,14 @@ jobs:
     steps:
       - run: echo 'Types'
       - run: sleep 2s
-      - run: exit 1
 
   end:
-    needs: [lint, test, types]
+    needs: [ lint, test, types ]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     env:
-      CHECKS_STATUS: ${{ needs.*.result == 'success' && 'success' || 'failure' }}
+      CHECKS_STATUS: ${{ !(contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped') || contains(needs.*.result, 'cancelled')) && 'success' || 'failure' }}
     steps:
-      - run: |
-          echo ${{ needs.lint.result }}
-          echo ${{ needs.test.result }}
-          echo ${{ needs.types.result }}
       - uses: actions/github-script@v7
         with:
           script: |

@@ -24,7 +24,6 @@ jobs:
                 'X-GitHub-Api-Version': '2022-11-28'
               }
             });
-      - run: exit 1
   
 
   lint:
@@ -41,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo 'Test'
-      - run: sleep 3s
+      - run: sleep 15s
 
   types:
     needs: init
@@ -50,7 +49,6 @@ jobs:
     steps:
       - run: echo 'Types'
       - run: sleep 2s
-      - run: exit 1
 
   end:
     needs: [ init, lint, test, types ]

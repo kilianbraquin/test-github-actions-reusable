@@ -49,6 +49,7 @@ jobs:
     steps:
       - run: echo 'Types'
       - run: sleep 2s
+      - run: exit 1
 
   end:
     needs: [ init, lint, test, types ]

@@ -5,12 +5,13 @@ env:
 
 jobs:
   init:
+    name: Init
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
+        name: Initialize reusable-checks commit status
         id: init-checks
         with:
-          result-encoding: string
           script: |
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -50,12 +51,14 @@ jobs:
       - run: echo 'Types'
       - run: sleep 2s
 
-  end:
+  validate:
     needs: [ init, lint, test, types ]
+    name: "Validate"
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
       - uses: actions/github-script@v7
+        name: Set reusable-checks final commit status
         id: set-final-commit-status
         with:
           result-encoding: string

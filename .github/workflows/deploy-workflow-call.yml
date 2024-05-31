@@ -41,7 +41,6 @@ jobs:
     steps:
       - run: echo 'Test'
       - run: sleep 3s
-      - run: exit 1
 
   types:
     needs: init
@@ -52,7 +51,7 @@ jobs:
       - run: sleep 2s
 
   end:
-    needs: [ lint, test, types ]
+    needs: [ init, lint, test, types ]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -62,7 +61,7 @@ jobs:
           result-encoding: string
           script: |
             const hasFailed = ${{ contains(needs.*.result, 'failure') }} || ${{ contains(needs.*.result, 'skipped') }} || ${{ contains(needs.*.result, 'cancelled') }};
-            const state = hasFailed ? 'success' : 'failure';
+            const state = hasFailed ? 'failure' : 'success';
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -76,5 +75,5 @@ jobs:
               }
             });
             return state;
-      - if: ${{ steps.set-final-commit-status.outputs.result != 'success' }}
+      - if: ${{ steps.set-final-commit-status.outputs.result == 'failure' }}
         run: exit 1

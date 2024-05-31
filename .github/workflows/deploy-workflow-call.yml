@@ -41,6 +41,7 @@ jobs:
     steps:
       - run: echo 'Test'
       - run: sleep 3s
+      - run: exit 1
 
   types:
     needs: init
@@ -67,7 +68,7 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               context: 'reusable-checks',
-              state: '${{ env.CHECKS_STATUS }}',
+              state: state,
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               description: 'Reusable Workflow',
               headers: {
